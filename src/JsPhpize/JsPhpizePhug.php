@@ -3,11 +3,11 @@
 namespace JsPhpize;
 
 use Exception;
-use Phug\Compiler;
-use Phug\CompilerModule;
 use JsPhpize\Compiler\Exception as CompilerException;
 use JsPhpize\Lexer\Exception as LexerException;
 use JsPhpize\Parser\Exception as ParserException;
+use Phug\Compiler;
+use Phug\CompilerModule;
 
 class JsPhpizePhug extends CompilerModule
 {
@@ -53,7 +53,7 @@ class JsPhpizePhug extends CompilerModule
             $jsPhpize = $compiler->getOption('jsphpize_engine');
             $dependencies = $jsPhpize->compileDependencies();
             if ($dependencies !== '') {
-                $phpCode = $compiler->getFormatter()->handleCode($dependencies).$phpCode;
+                $phpCode = $compiler->getFormatter()->handleCode($dependencies) . $phpCode;
             }
             $jsPhpize->flushDependencies();
             $compiler->unsetOption('jsphpize_engine');
