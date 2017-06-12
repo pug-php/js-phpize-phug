@@ -32,7 +32,7 @@ class JsPhpizePhugFormatter extends FormatterModule
                     /** @var JsPhpize $jsPhpize */
                     $jsPhpize = $compiler->getOption('jsphpize_engine');
                     $pugModuleName = $formatter->getOption('dependencies_storage');
-                    $jsCode = str_replace('$'.$pugModuleName, $pugModuleName, $jsCode);
+                    $jsCode = str_replace('$' . $pugModuleName, $pugModuleName, $jsCode);
 
                     try {
                         return rtrim(trim(preg_replace(
