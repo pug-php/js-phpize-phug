@@ -57,7 +57,7 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
     public function testDependencyStorageFixer()
     {
         $formatter = new Formatter([
-            'modules' => [JsPhpizePhugFormatter::class],
+            'modules' => [new JsPhpizePhugFormatter(new Compiler())],
         ]);
         $getter = $formatter->getOption('dependencies_storage_getter');
 
