@@ -3,9 +3,7 @@
 namespace Tests\JsPhpize;
 
 use JsPhpize\JsPhpizePhug;
-use JsPhpize\JsPhpizePhugFormatter;
 use Phug\Compiler;
-use Phug\Formatter;
 
 class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
 {
