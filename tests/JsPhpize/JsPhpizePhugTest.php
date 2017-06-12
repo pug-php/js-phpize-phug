@@ -53,15 +53,4 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
             $compiler->compile('a(foo?!=array("foo" => "bar")[\'foo\'])')
         );
     }
-
-    public function testDependencyStorageFixer()
-    {
-        $formatter = new Formatter([
-            'modules' => [new JsPhpizePhugFormatter(new Compiler())],
-        ]);
-        $getter = $formatter->getOption('dependencies_storage_getter');
-
-        self::assertSame('foo', $getter('  foo'));
-        self::assertSame('foo', $getter('  $foo'));
-    }
 }
