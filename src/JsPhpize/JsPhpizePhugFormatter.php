@@ -25,20 +25,19 @@ class JsPhpizePhugFormatter extends FormatterModule
     public function injectFormatter(Formatter $formatter)
     {
         $compiler = $this->compiler;
-        // 'dependencies_storage'
         $formatter->setOptionsRecursive([
             'patterns' => [
                 'transform_expression' => function ($jsCode) use (&$compiler, &$formatter) {
                     /** @var JsPhpize $jsPhpize */
                     $jsPhpize = $compiler->getOption('jsphpize_engine');
                     $pugModuleName = $formatter->getOption('dependencies_storage');
-                    $jsCode = str_replace('$'.$pugModuleName, $pugModuleName, $jsCode);
+                    $newCode = str_replace('$'.$pugModuleName, $pugModuleName, $jsCode);
 
                     try {
                         return rtrim(trim(preg_replace(
                             '/\{\s*\}$/',
                             '',
-                            trim($jsPhpize->compile($jsCode))
+                            trim($jsPhpize->compile($newCode))
                         )), ';');
                     } catch (Exception $e) {
                         if (

@@ -7,18 +7,28 @@ use Phug\CompilerModule;
 
 class JsPhpizePhug extends CompilerModule
 {
+    /**
+     * @var array
+     */
+    protected $options = [];
+
+    public function __construct(array $options = [])
+    {
+        $this->options = array_merge([
+            'catchDependencies' => true,
+        ], $options);
+    }
+
     public function injectCompiler(Compiler $compiler)
     {
-        // 'dependencies_storage'
+        $options = $this->options;
         $compiler->setOptionsRecursive([
             'formatter_options' => [
                 'modules' => [new JsPhpizePhugFormatter($compiler)],
             ],
         ]);
-        $compiler->addHook('pre_compile', 'jsphpize', function ($pugCode) use (&$compiler) {
-            $compiler->setOption('jsphpize_engine', new JsPhpize([
-                'catchDependencies' => true,
-            ]));
+        $compiler->addHook('pre_compile', 'jsphpize', function ($pugCode) use (&$compiler, $options) {
+            $compiler->setOption('jsphpize_engine', new JsPhpize($options));
 
             return $pugCode;
         });
