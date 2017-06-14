@@ -22,6 +22,27 @@ class JsPhpizePhugFormatter extends FormatterModule
         $this->compiler = $compiler;
     }
 
+    public function compile(JsPhpize $jsPhpize, $code)
+    {
+        try {
+            return rtrim(trim(preg_replace(
+                '/\{\s*\}$/',
+                '',
+                trim($jsPhpize->compile($code))
+            )), ';');
+        } catch (Exception $exception) {
+            if (
+                $exception instanceof LexerException ||
+                $exception instanceof ParserException ||
+                $exception instanceof CompilerException
+            ) {
+                return $exception;
+            }
+
+            throw $exception;
+        }
+    }
+
     public function injectFormatter(Formatter $formatter)
     {
         $compiler = $this->compiler;
@@ -31,25 +52,15 @@ class JsPhpizePhugFormatter extends FormatterModule
                     /** @var JsPhpize $jsPhpize */
                     $jsPhpize = $compiler->getOption('jsphpize_engine');
                     $pugModuleName = $formatter->getOption('dependencies_storage');
-                    $newCode = str_replace('$' . $pugModuleName, $pugModuleName, $jsCode);
+                    $code = str_replace('$' . $pugModuleName, $pugModuleName, $jsCode);
 
-                    try {
-                        return rtrim(trim(preg_replace(
-                            '/\{\s*\}$/',
-                            '',
-                            trim($jsPhpize->compile($newCode))
-                        )), ';');
-                    } catch (Exception $e) {
-                        if (
-                            $e instanceof LexerException ||
-                            $e instanceof ParserException ||
-                            $e instanceof CompilerException
-                        ) {
-                            return $jsCode;
-                        }
+                    $compilation = $this->compile($jsPhpize, $code);
 
-                        throw $e;
+                    if (!($compilation instanceof Exception)) {
+                        return $compilation;
                     }
+
+                    return $jsCode;
                 },
             ],
         ]);

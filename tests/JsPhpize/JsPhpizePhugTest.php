@@ -33,6 +33,25 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
             $html
         );
 
+        $code = preg_replace('/\n +`/', "\n", '
+            `-
+            `    item = "uno";
+            `    string = item.charAt(0)
+            `    
+            `      .toUpperCase() +
+            `    item.slice(1);
+            `p=string');
+
+        ob_start();
+        $php = $compiler->compile($code);
+        eval('?>' . $php);
+        $html = ob_get_contents();
+        ob_end_clean();
+        self::assertSame(
+            '<p>Uno</p>',
+            $html
+        );
+
         $compiler = new Compiler([
             'modules' => [JsPhpizePhug::class],
         ]);
