@@ -2,6 +2,7 @@
 
 namespace Tests\JsPhpize;
 
+use JsPhpize\JsPhpize;
 use JsPhpize\JsPhpizePhug;
 use Phug\Compiler;
 
@@ -68,6 +69,42 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
         self::assertSame(
             '<a foo="<?= (is_array($_pug_temp = array("foo" => "bar")[\'foo\']) || (is_object($_pug_temp) && !method_exists($_pug_temp, "__toString")) ? json_encode($_pug_temp) : strval($_pug_temp)) ?>"></a>',
             $compiler->compile('a(foo?!=array("foo" => "bar")[\'foo\'])')
+        );
+    }
+
+    public function testTruncatedCode()
+    {
+        $compiler = new Compiler([
+            'modules' => [JsPhpizePhug::class],
+        ]);
+
+        $compiler->setOption('jsphpize_engine', new JsPhpize());
+
+        $jsPhpize = $compiler->getFormatter()->getOption(['patterns', 'transform_expression']);
+
+        self::assertSame(
+            '',
+            $jsPhpize('')
+        );
+
+        self::assertSame(
+            '}',
+            $jsPhpize('}')
+        );
+
+        self::assertSame(
+            'if (false)',
+            $jsPhpize('if (false) {}')
+        );
+
+        self::assertSame(
+            'if (\'works\')',
+            $jsPhpize('if (\'works\')')
+        );
+
+        self::assertSame(
+            '} else {',
+            $jsPhpize('} else {')
         );
     }
 }
