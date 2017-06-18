@@ -17,6 +17,7 @@ class JsPhpizePhug extends CompilerModule
         $this->options = array_merge_recursive([
             'allowTruncatedParentheses' => true,
             'catchDependencies' => true,
+            'ignoreDollarVariable' => true,
             'helpers' => [
                 'dot' => 'dotWithArrayPrototype',
             ],
