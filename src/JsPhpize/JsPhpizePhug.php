@@ -41,8 +41,8 @@ class JsPhpizePhug extends CompilerModule
                 $phpCode
             );
             $phpCode = preg_replace(
-                '/\}\s*\?><\?(?:php)?\s*('.
-                'else(if)?|for|while|switch|function'.
+                '/\}\s*\?><\?(?:php)?\s*(' .
+                'else(if)?|for|while|switch|function' .
                 ')(?![a-zA-Z0-9_])/',
                 '} $1',
                 $phpCode
