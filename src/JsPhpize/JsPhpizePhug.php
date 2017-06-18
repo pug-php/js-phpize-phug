@@ -14,8 +14,12 @@ class JsPhpizePhug extends CompilerModule
 
     public function __construct(array $options = [])
     {
-        $this->options = array_merge([
+        $this->options = array_merge_recursive([
+            'allowTruncatedParentheses' => true,
             'catchDependencies' => true,
+            'helpers' => [
+                'dot' => 'dotWithArrayPrototype',
+            ],
         ], $options);
     }
 

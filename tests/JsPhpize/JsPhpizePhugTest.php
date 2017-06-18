@@ -78,9 +78,21 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
             'modules' => [JsPhpizePhug::class],
         ]);
 
-        $compiler->setOption('jsphpize_engine', new JsPhpize());
+        $compiler->setOption('jsphpize_engine', new JsPhpize([
+            'allowTruncatedParentheses' => true,
+            'catchDependencies' => true,
+            'helpers' => [
+                'dot' => 'dotWithArrayPrototype',
+            ],
+        ]));
 
         $jsPhpize = $compiler->getFormatter()->getOption(['patterns', 'transform_expression']);
+
+        self::assertSame(
+            'call_user_func(call_user_func($GLOBALS[\'__jpv_dotWithArrayPrototype\'], $items, ' .
+            '\'forEach\'), function ($item) {',
+            $jsPhpize('items.forEach(function (item) {')
+        );
 
         self::assertSame(
             '',
