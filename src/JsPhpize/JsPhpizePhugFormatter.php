@@ -28,7 +28,7 @@ class JsPhpizePhugFormatter extends FormatterModule
             return rtrim(trim(preg_replace(
                 '/\{\s*\}$/',
                 '',
-                trim($jsPhpize->compile($code))
+                trim($jsPhpize->compile($code, $this->compiler->getFileName()))
             )), ';');
         } catch (Exception $exception) {
             if (
