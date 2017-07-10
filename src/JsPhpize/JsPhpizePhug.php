@@ -13,7 +13,6 @@ use Phug\Util\ModuleContainerInterface;
 
 class JsPhpizePhug extends AbstractCompilerModule
 {
-
     public function __construct(ModuleContainerInterface $compiler)
     {
         parent::__construct($compiler);
@@ -87,12 +86,10 @@ class JsPhpizePhug extends AbstractCompilerModule
     {
         return [
             CompilerEvent::COMPILE => function (Compiler\Event\CompileEvent $e) {
-
                 $e->getTarget()->setOption('jsphpize_engine', new JsPhpize($this->getOptions()));
             },
 
             CompilerEvent::OUTPUT => function (Compiler\Event\OutputEvent $e) {
-
                 $compiler = $e->getTarget();
 
                 /** @var JsPhpize $jsPhpize */
