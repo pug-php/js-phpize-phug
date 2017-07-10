@@ -6,9 +6,9 @@ use Exception;
 use Phug\AbstractCompilerModule;
 use Phug\Compiler;
 use Phug\CompilerEvent;
-use Phug\CompilerException;
-use Phug\LexerException;
-use Phug\ParserException;
+use JsPhpize\Compiler\Exception as CompilerException;
+use JsPhpize\Lexer\Exception as LexerException;
+use JsPhpize\Parser\Exception as ParserException;
 use Phug\Util\ModuleContainerInterface;
 
 class JsPhpizePhug extends AbstractCompilerModule
@@ -77,6 +77,8 @@ class JsPhpizePhug extends AbstractCompilerModule
             ) {
                 return $exception;
             }
+            var_dump($code);
+            exit;
 
             throw $exception;
         }

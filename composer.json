@@ -11,7 +11,7 @@
   ],
   "require": {
     "php": ">=5.3.0",
-    "js-phpize/js-phpize": "^1.4.2",
+    "js-phpize/js-phpize": "^1.10.0",
     "phug/compiler": "^0.2.1"
   },
   "require-dev": {
