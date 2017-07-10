@@ -3,12 +3,12 @@
 namespace JsPhpize;
 
 use Exception;
-use Phug\AbstractCompilerModule;
-use Phug\Compiler;
-use Phug\CompilerEvent;
 use JsPhpize\Compiler\Exception as CompilerException;
 use JsPhpize\Lexer\Exception as LexerException;
 use JsPhpize\Parser\Exception as ParserException;
+use Phug\AbstractCompilerModule;
+use Phug\Compiler;
+use Phug\CompilerEvent;
 use Phug\Util\ModuleContainerInterface;
 
 class JsPhpizePhug extends AbstractCompilerModule
