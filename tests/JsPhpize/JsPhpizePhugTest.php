@@ -8,7 +8,6 @@ use Phug\Compiler;
 
 class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testPlug()
     {
         $compiler = new Compiler([

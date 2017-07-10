@@ -18,13 +18,13 @@ class JsPhpizePhug extends AbstractCompilerModule
     {
         parent::__construct($compiler);
 
-        /** @var Compiler $compiler */
+        /* @var Compiler $compiler */
 
         //Make sure we can retrieve the module options from the container
         $compiler->setOptionsRecursive([
             'module_options' => [
-                'jsphpize' => []
-            ]
+                'jsphpize' => [],
+            ],
         ]);
 
         //Set default options
@@ -119,7 +119,7 @@ class JsPhpizePhug extends AbstractCompilerModule
 
                 $jsPhpize->flushDependencies();
                 $compiler->unsetOption('jsphpize_engine');
-            }
+            },
         ];
     }
 }
