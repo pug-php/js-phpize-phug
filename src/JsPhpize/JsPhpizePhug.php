@@ -49,7 +49,7 @@ class JsPhpizePhug extends AbstractCompilerModule
                     $pugModuleName = $formatter->getOption('dependencies_storage');
                     $code = str_replace('$' . $pugModuleName, $pugModuleName, $jsCode);
 
-                    $compilation = $this->compile($jsPhpize, $code, $compiler->getFileName());
+                    $compilation = $this->compile($jsPhpize, $code, $compiler->getPath());
 
                     if (!($compilation instanceof Exception)) {
                         return $compilation;
