@@ -77,8 +77,6 @@ class JsPhpizePhug extends AbstractCompilerModule
             ) {
                 return $exception;
             }
-            var_dump($code);
-            exit;
 
             throw $exception;
         }
