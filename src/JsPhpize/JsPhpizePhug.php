@@ -13,11 +13,12 @@ use Phug\Util\ModuleContainerInterface;
 
 class JsPhpizePhug extends AbstractCompilerModule
 {
-    public function __construct(ModuleContainerInterface $compiler)
+    public function __construct(ModuleContainerInterface $container)
     {
-        parent::__construct($compiler);
+        parent::__construct($container);
 
         /* @var Compiler $compiler */
+        $compiler = $container;
 
         //Make sure we can retrieve the module options from the container
         $compiler->setOptionsRecursive([

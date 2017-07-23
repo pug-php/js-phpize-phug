@@ -11,7 +11,7 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
     public function testPlug()
     {
         $compiler = new Compiler([
-            'modules' => [JsPhpizePhug::class],
+            'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
         self::assertSame(
@@ -20,7 +20,7 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
         );
 
         $compiler = new Compiler([
-            'modules' => [JsPhpizePhug::class],
+            'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
         ob_start();
@@ -54,7 +54,7 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
         );
 
         $compiler = new Compiler([
-            'modules' => [JsPhpizePhug::class],
+            'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
         self::assertSame(
@@ -63,7 +63,7 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
         );
 
         $compiler = new Compiler([
-            'modules' => [JsPhpizePhug::class],
+            'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
         self::assertSame(
@@ -75,7 +75,7 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
     public function testTruncatedCode()
     {
         $compiler = new Compiler([
-            'modules' => [JsPhpizePhug::class],
+            'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
         $compiler->setOption('jsphpize_engine', new JsPhpize([
