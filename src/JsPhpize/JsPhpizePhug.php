@@ -9,6 +9,7 @@ use JsPhpize\Parser\Exception as ParserException;
 use Phug\AbstractCompilerModule;
 use Phug\Compiler;
 use Phug\CompilerEvent;
+use Phug\Renderer;
 use Phug\Util\ModuleContainerInterface;
 
 class JsPhpizePhug extends AbstractCompilerModule
@@ -16,6 +17,14 @@ class JsPhpizePhug extends AbstractCompilerModule
     public function __construct(ModuleContainerInterface $container)
     {
         parent::__construct($container);
+
+        if ($container instanceof Renderer) {
+            $container->setOptionsRecursive([
+                'compiler_modules' => [$this],
+            ]);
+
+            return;
+        }
 
         /* @var Compiler $compiler */
         $compiler = $container;
@@ -86,19 +95,19 @@ class JsPhpizePhug extends AbstractCompilerModule
     public function getEventListeners()
     {
         return [
-            CompilerEvent::COMPILE => function (Compiler\Event\CompileEvent $e) {
-                $e->getTarget()->setOption('jsphpize_engine', new JsPhpize($this->getOptions()));
+            CompilerEvent::COMPILE => function (Compiler\Event\CompileEvent $event) {
+                $event->getTarget()->setOption('jsphpize_engine', new JsPhpize($this->getOptions()));
             },
 
-            CompilerEvent::OUTPUT => function (Compiler\Event\OutputEvent $e) {
-                $compiler = $e->getTarget();
+            CompilerEvent::OUTPUT => function (Compiler\Event\OutputEvent $event) {
+                $compiler = $event->getTarget();
 
                 /** @var JsPhpize $jsPhpize */
                 $jsPhpize = $compiler->getOption('jsphpize_engine');
                 $output = preg_replace(
                     '/\{\s*\?><\?(?:php)?\s*\}/',
                     '{}',
-                    $e->getOutput()
+                    $event->getOutput()
                 );
                 $output = preg_replace(
                     '/\}\s*\?><\?(?:php)?\s*(' .
@@ -113,7 +122,7 @@ class JsPhpizePhug extends AbstractCompilerModule
                     $output = $compiler->getFormatter()->handleCode($dependencies) . $output;
                 }
 
-                $e->setOutput($output);
+                $event->setOutput($output);
 
                 $jsPhpize->flushDependencies();
                 $compiler->unsetOption('jsphpize_engine');
