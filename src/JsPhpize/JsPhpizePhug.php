@@ -19,10 +19,6 @@ class JsPhpizePhug extends AbstractCompilerModule
         parent::__construct($container);
 
         if ($container instanceof Renderer) {
-            $container->setOptionsRecursive([
-                'compiler_modules' => [$this],
-            ]);
-
             return;
         }
 
