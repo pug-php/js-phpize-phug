@@ -52,10 +52,8 @@ class JsPhpizePhug extends AbstractCompilerModule
 
                     /** @var JsPhpize $jsPhpize */
                     $jsPhpize = $compiler->getOption('jsphpize_engine');
-                    $pugModuleName = $formatter->getOption('dependencies_storage');
-                    $code = str_replace('$' . $pugModuleName, $pugModuleName, $jsCode);
 
-                    $compilation = $this->compile($jsPhpize, $code, $compiler->getPath());
+                    $compilation = $this->compile($jsPhpize, $jsCode, $compiler->getPath());
 
                     if (!($compilation instanceof Exception)) {
                         return $compilation;
@@ -70,11 +68,15 @@ class JsPhpizePhug extends AbstractCompilerModule
     public function compile(JsPhpize $jsPhpize, $code, $fileName)
     {
         try {
-            return rtrim(trim(preg_replace(
-                '/\{\s*\}$/',
-                '',
-                trim($jsPhpize->compile($code, $fileName))
-            )), ';');
+            $phpCode = trim($jsPhpize->compile($code, $fileName));
+            $phpCode = preg_replace('/\{\s*\}$/', '', $phpCode);
+            $phpCode = preg_replace(
+                '/^(?<!\$)\$+(\$[a-zA-Z\\\\\\x7f-\\xff][a-zA-Z0-9\\\\_\\x7f-\\xff]*\s*[=;])/',
+                '$1',
+                $phpCode
+            );
+
+            return rtrim(trim($phpCode), ';');
         } catch (Exception $exception) {
             if (
                 $exception instanceof LexerException ||
