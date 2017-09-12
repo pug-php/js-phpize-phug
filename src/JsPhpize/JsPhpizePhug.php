@@ -45,10 +45,9 @@ class JsPhpizePhug extends AbstractCompilerModule
         //Apply options from container
         $this->setOptionsRecursive($compiler->getOption(['module_options', 'jsphpize']));
 
-        $formatter = $compiler->getFormatter();
-        $formatter->setOptionsRecursive([
+        $compiler->setOptionsRecursive([
             'patterns' => [
-                'transform_expression' => function ($jsCode) use ($compiler, $formatter) {
+                'transform_expression' => function ($jsCode) use ($compiler) {
 
                     /** @var JsPhpize $jsPhpize */
                     $jsPhpize = $compiler->getOption('jsphpize_engine');
