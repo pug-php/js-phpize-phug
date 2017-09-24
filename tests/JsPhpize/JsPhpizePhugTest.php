@@ -14,9 +14,15 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
             'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
+        ob_start();
+        $php = $compiler->compile('a(data-foo={message: "Hello"})');
+        eval('?>' . $php);
+        $html = ob_get_contents();
+        ob_end_clean();
+
         self::assertSame(
-            '<a data-foo="<?= htmlspecialchars((is_array($_pug_temp = array( \'message\' => "Hello" )) || (is_object($_pug_temp) && !method_exists($_pug_temp, "__toString")) ? json_encode($_pug_temp) : strval($_pug_temp))) ?>"></a>',
-            $compiler->compile('a(data-foo={message: "Hello"})')
+            '<a data-foo="{&quot;message&quot;:&quot;Hello&quot;}"></a>',
+            $html
         );
 
         $compiler = new Compiler([
@@ -57,18 +63,29 @@ class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
             'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
+        ob_start();
+        $foo = '<a>" b="b';
+        $php = $compiler->compile('a(foo?!=foo)');
+        eval('?>' . $php);
+        $html = ob_get_contents();
+        ob_end_clean();
         self::assertSame(
-            '<a foo="<?= (is_array($_pug_temp = $foo) || (is_object($_pug_temp) && !method_exists($_pug_temp, "__toString")) ? json_encode($_pug_temp) : strval($_pug_temp)) ?>"></a>',
-            $compiler->compile('a(foo?!=foo)')
+            '<a foo="<a>" b="b"></a>',
+            $html
         );
 
         $compiler = new Compiler([
             'compiler_modules' => [JsPhpizePhug::class],
         ]);
 
+        ob_start();
+        $php = $compiler->compile('a(foo=array("foo" => "bar")[\'foo\'])');
+        eval('?>' . $php);
+        $html = ob_get_contents();
+        ob_end_clean();
         self::assertSame(
-            '<a foo="<?= (is_array($_pug_temp = array("foo" => "bar")[\'foo\']) || (is_object($_pug_temp) && !method_exists($_pug_temp, "__toString")) ? json_encode($_pug_temp) : strval($_pug_temp)) ?>"></a>',
-            $compiler->compile('a(foo?!=array("foo" => "bar")[\'foo\'])')
+            '<a foo="bar"></a>',
+            $html
         );
     }
 
