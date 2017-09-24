@@ -67,7 +67,7 @@ class JsPhpizePhug extends AbstractCompilerModule
     public function compile(JsPhpize $jsPhpize, $code, $fileName)
     {
         try {
-            $phpCode = trim($jsPhpize->compile($code, $fileName));
+            $phpCode = trim($jsPhpize->compile($code, $fileName ?: 'raw string'));
             $phpCode = preg_replace('/\{\s*\}$/', '', $phpCode);
             $phpCode = preg_replace(
                 '/^(?<!\$)\$+(\$[a-zA-Z\\\\\\x7f-\\xff][a-zA-Z0-9\\\\_\\x7f-\\xff]*\s*[=;])/',
