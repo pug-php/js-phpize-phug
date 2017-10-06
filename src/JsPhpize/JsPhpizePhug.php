@@ -9,6 +9,7 @@ use JsPhpize\Parser\Exception as ParserException;
 use Phug\AbstractCompilerModule;
 use Phug\Compiler;
 use Phug\CompilerEvent;
+use Phug\CompilerInterface;
 use Phug\Renderer;
 use Phug\Util\ModuleContainerInterface;
 
@@ -49,8 +50,7 @@ class JsPhpizePhug extends AbstractCompilerModule
             'patterns' => [
                 'transform_expression' => function ($jsCode) use ($compiler) {
 
-                    /** @var JsPhpize $jsPhpize */
-                    $jsPhpize = $compiler->getOption('jsphpize_engine');
+                    $jsPhpize = $this->getJsPhpizeEngine($compiler);
 
                     $compilation = $this->compile($jsPhpize, $jsCode, $compiler->getPath());
 
@@ -62,6 +62,18 @@ class JsPhpizePhug extends AbstractCompilerModule
                 },
             ],
         ]);
+    }
+
+    /**
+     * @return JsPhpize
+     */
+    public function getJsPhpizeEngine(CompilerInterface $compiler)
+    {
+        if (!$compiler->hasOption('jsphpize_engine')) {
+            $compiler->setOption('jsphpize_engine', new JsPhpize($this->getOptions()));
+        }
+
+        return $compiler->getOption('jsphpize_engine');
     }
 
     public function compile(JsPhpize $jsPhpize, $code, $fileName)
@@ -92,10 +104,6 @@ class JsPhpizePhug extends AbstractCompilerModule
     public function getEventListeners()
     {
         return [
-            CompilerEvent::COMPILE => function (Compiler\Event\CompileEvent $event) {
-                $event->getTarget()->setOption('jsphpize_engine', new JsPhpize($this->getOptions()));
-            },
-
             CompilerEvent::OUTPUT => function (Compiler\Event\OutputEvent $event) {
                 $compiler = $event->getTarget();
 
