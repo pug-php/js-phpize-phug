@@ -49,9 +49,7 @@ class JsPhpizePhug extends AbstractCompilerModule
         $compiler->setOptionsRecursive([
             'patterns' => [
                 'transform_expression' => function ($jsCode) use ($compiler) {
-
                     $jsPhpize = $this->getJsPhpizeEngine($compiler);
-
                     $compilation = $this->compile($jsPhpize, $jsCode, $compiler->getPath());
 
                     if (!($compilation instanceof Exception)) {
@@ -106,9 +104,7 @@ class JsPhpizePhug extends AbstractCompilerModule
         return [
             CompilerEvent::OUTPUT => function (Compiler\Event\OutputEvent $event) {
                 $compiler = $event->getTarget();
-
-                /** @var JsPhpize $jsPhpize */
-                $jsPhpize = $compiler->getOption('jsphpize_engine');
+                $jsPhpize = $this->getJsPhpizeEngine($compiler);
                 $output = preg_replace(
                     '/\{\s*\?><\?(?:php)?\s*\}/',
                     '{}',
