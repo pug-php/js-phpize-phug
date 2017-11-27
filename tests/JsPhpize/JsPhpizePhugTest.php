@@ -4,9 +4,10 @@ namespace Tests\JsPhpize;
 
 use JsPhpize\JsPhpize;
 use JsPhpize\JsPhpizePhug;
+use PHPUnit\Framework\TestCase;
 use Phug\Compiler;
 
-class JsPhpizePhugTest extends \PHPUnit_Framework_TestCase
+class JsPhpizePhugTest extends TestCase
 {
     public function testPlug()
     {
