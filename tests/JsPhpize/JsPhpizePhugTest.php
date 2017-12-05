@@ -138,9 +138,6 @@ class JsPhpizePhugTest extends TestCase
         );
     }
 
-    /**
-     * @group i
-     */
     public function testCodeKeptAsIt()
     {
         $compiler = new Compiler([
