@@ -137,4 +137,21 @@ class JsPhpizePhugTest extends TestCase
             $jsPhpize('} else {')
         );
     }
+
+    /**
+     * @group i
+     */
+    public function testCodeKeptAsIt()
+    {
+        $compiler = new Compiler([
+            'compiler_modules' => [JsPhpizePhug::class],
+        ]);
+
+        $jsPhpize = $compiler->getFormatter()->getOption(['patterns', 'transform_expression']);
+
+        self::assertSame(
+            'Layout::title()',
+            $jsPhpize('Layout::title()')
+        );
+    }
 }
