@@ -1,6 +1,6 @@
 {
   "name": "js-phpize/js-phpize-phug",
-  "description": "Convert js-like syntax to standalone PHP code.",
+  "description": "Convert js-like syntax to standalone PHP code in Phug template.",
   "type": "library",
   "license": "MIT",
   "authors": [
