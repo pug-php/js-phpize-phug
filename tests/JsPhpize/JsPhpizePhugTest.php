@@ -41,6 +41,8 @@ class JsPhpizePhugTest extends TestCase
             eval('?>' . $php);
         } catch (\Exception $exp) {
             $exception = $exp->getMessage();
+        } catch (\Throwable $exp) {
+            $exception = $exp->getMessage();
         }
 
         $html = ob_get_contents();
@@ -116,7 +118,7 @@ class JsPhpizePhugTest extends TestCase
 
         $jsPhpize = $compiler->getFormatter()->getOption(['patterns', 'transform_expression']);
 
-        $php7Syntax = '$GLOBALS[\'__jpv_dotWithArrayPrototype\']($items, ' .
+        $php7Syntax = '$GLOBALS[\'__jpv_dotWithArrayPrototype_with_ref\']($items, ' .
             '\'forEach\')(function ($item) {';
         $php5Syntax = 'call_user_func(call_user_func($GLOBALS[\'__jpv_dotWithArrayPrototype\'], $items, ' .
             '\'forEach\'), function ($item) {';

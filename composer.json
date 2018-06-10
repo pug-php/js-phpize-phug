@@ -10,9 +10,10 @@
     }
   ],
   "require": {
-    "php": ">=5.5.0",
-    "js-phpize/js-phpize": "^1.12.0 || ^2.0.0",
-    "phug/compiler": "^0.5.0"
+    "php": ">=7.0",
+    "js-phpize/js-phpize": "^2.0.0",
+    "phug/compiler": "^0.5.0",
+    "phug/formatter": "^0.5.42"
   },
   "require-dev": {
     "phpunit/phpunit": ">=4.8.35 <6.0",
