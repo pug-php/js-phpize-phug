@@ -106,10 +106,14 @@ class JsPhpizePhugTest extends TestCase
 
         $jsPhpize = $compiler->getFormatter()->getOption(['patterns', 'transform_expression']);
 
-        self::assertSame(
-            'call_user_func(call_user_func($GLOBALS[\'__jpv_dotWithArrayPrototype\'], $items, ' .
-            '\'forEach\'), function ($item) {',
-            $jsPhpize('items.forEach(function (item) {')
+        $php7Syntax = '$GLOBALS[\'__jpv_dotWithArrayPrototype\']($items, ' .
+            '\'forEach\')(function ($item) {';
+        $php5Syntax = 'call_user_func(call_user_func($GLOBALS[\'__jpv_dotWithArrayPrototype\'], $items, ' .
+            '\'forEach\'), function ($item) {';
+        self::assertContains(
+            $jsPhpize('items.forEach(function (item) {'),
+            [$php5Syntax, $php7Syntax],
+            "`items.forEach(function (item) {` should compile into rather `$php5Syntax` or `$php7Syntax`"
         );
 
         self::assertSame(
