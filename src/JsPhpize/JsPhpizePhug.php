@@ -10,6 +10,8 @@ use Phug\AbstractCompilerModule;
 use Phug\Compiler;
 use Phug\CompilerEvent;
 use Phug\CompilerInterface;
+use Phug\Parser\Node\CommentNode;
+use Phug\Parser\Node\TextNode;
 use Phug\Renderer;
 use Phug\Util\ModuleContainerInterface;
 
@@ -46,30 +48,61 @@ class JsPhpizePhug extends AbstractCompilerModule
         //Apply options from container
         $this->setOptionsRecursive($compiler->getOption(['module_options', 'jsphpize']));
 
+        $compiler->getParser()->setOptionsRecursive([
+            'on_node' => [$this, 'handleNodeEvent'],
+        ]);
         $compiler->setOptionsRecursive([
             'patterns' => [
                 'transform_expression' => function ($jsCode) use ($compiler) {
-                    $jsPhpize = $this->getJsPhpizeEngine($compiler);
-                    $compilation = $this->compile($jsPhpize, $jsCode, $compiler->getPath());
-
-                    if (!($compilation instanceof Exception)) {
-                        return $compilation;
-                    }
-
-                    return $jsCode;
+                    return $this->transformExpression($this->getJsPhpizeEngine($compiler), $jsCode, $compiler->getPath());
                 },
             ],
             'checked_variable_exceptions' => [
-                'js-phpize' => function ($variable, $index, $tokens) {
-                    return $index > 2 &&
-                        $tokens[$index - 1] === '(' &&
-                        $tokens[$index - 2] === ']' &&
-                        is_array($tokens[$index - 3]) &&
-                        $tokens[$index - 3][0] === T_CONSTANT_ENCAPSED_STRING &&
-                        preg_match('/_with_ref\'$/', $tokens[$index - 3][1]);
-                },
+                'js-phpize' => [static::class, 'checkedVariableExceptions'],
             ],
         ]);
+    }
+
+    public function handleNodeEvent(Compiler\Event\NodeEvent $event)
+    {
+        $node = $event->getNode();
+        var_dump($this->eventListeners);
+        exit;
+        if ($node instanceof CommentNode && !$node->isVisible() && $node->hasChildAt(0)) {
+            $this->handleComment($node);
+        }
+    }
+
+    protected function handleComment(CommentNode $node)
+    {
+        $firstChild = $node->getChildAt(0);
+        if ($firstChild instanceof TextNode) {
+            $comment = trim($firstChild->getValue());
+            var_dump($comment);
+            exit;
+        }
+    }
+
+    protected function transformExpression(JsPhpize $jsPhpize, $jsCode, $fileName)
+    {
+        $compilation = $this->compile($jsPhpize, $jsCode, $fileName);
+
+        if (!($compilation instanceof Exception)) {
+            return $compilation;
+        }
+
+        return $jsCode;
+    }
+
+    public static function checkedVariableExceptions($variable, $index, $tokens)
+    {
+        return $index > 2 &&
+            $tokens[$index - 1] === '(' &&
+            $tokens[$index - 2] === ']' &&
+            !preg_match('/^__?pug_/', $variable) &&
+            is_array($tokens[$index - 3]) &&
+            $tokens[$index - 3][0] === T_CONSTANT_ENCAPSED_STRING &&
+            preg_match('/_with_ref\'$/', $tokens[$index - 3][1]);
     }
 
     /**
@@ -119,38 +152,54 @@ class JsPhpizePhug extends AbstractCompilerModule
     }
 
     /**
+     * @param CompilerInterface $compiler
+     * @param string            $output
+     *
+     * @return string
+     */
+    protected function parseOutput($compiler, $output)
+    {
+        $jsPhpize = $this->getJsPhpizeEngine($compiler);
+        $output = preg_replace(
+            '/\{\s*\?><\?(?:php)?\s*\}/',
+            '{}',
+            $output
+        );
+        $output = preg_replace(
+            '/\}\s*\?><\?(?:php)?\s*(' .
+            'else(if)?|for|while|switch|function' .
+            ')(?![a-zA-Z0-9_])/',
+            '} $1',
+            $output
+        );
+
+        $dependencies = $jsPhpize->compileDependencies();
+        if ($dependencies !== '') {
+            $output = $compiler->getFormatter()->handleCode($dependencies) . $output;
+        }
+
+        $jsPhpize->flushDependencies();
+
+        return $output;
+    }
+
+    public function handleOutputEvent(Compiler\Event\OutputEvent $event)
+    {
+        /** @var CompilerInterface $compiler */
+        $compiler = $event->getTarget();
+
+        $event->setOutput($this->parseOutput($compiler, $event->getOutput()));
+
+        $compiler->unsetOption('jsphpize_engine');
+    }
+
+    /**
      * @return array
      */
     public function getEventListeners()
     {
         return [
-            CompilerEvent::OUTPUT => function (Compiler\Event\OutputEvent $event) {
-                /** @var CompilerInterface $compiler */
-                $compiler = $event->getTarget();
-                $jsPhpize = $this->getJsPhpizeEngine($compiler);
-                $output = preg_replace(
-                    '/\{\s*\?><\?(?:php)?\s*\}/',
-                    '{}',
-                    $event->getOutput()
-                );
-                $output = preg_replace(
-                    '/\}\s*\?><\?(?:php)?\s*(' .
-                    'else(if)?|for|while|switch|function' .
-                    ')(?![a-zA-Z0-9_])/',
-                    '} $1',
-                    $output
-                );
-
-                $dependencies = $jsPhpize->compileDependencies();
-                if ($dependencies !== '') {
-                    $output = $compiler->getFormatter()->handleCode($dependencies) . $output;
-                }
-
-                $event->setOutput($output);
-
-                $jsPhpize->flushDependencies();
-                $compiler->unsetOption('jsphpize_engine');
-            },
+            CompilerEvent::OUTPUT => [$this, 'handleOutputEvent'],
         ];
     }
 }
