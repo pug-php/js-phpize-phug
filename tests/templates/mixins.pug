@@ -1,0 +1,12 @@
+//- @document-language php
+
+mixin xphp()
+    div
+        p=(("5" + "6") === "56" ? "js" : "php")
+        block
+
+//- @node-language js
+mixin xjs()
+    div
+        p=(("5" + "6") === "56" ? "js" : "php")
+        block

@@ -1,0 +1,14 @@
+//- @document-language php
+
+extends layout
+
+block content
+    h1=(("5" + "6") === "56" ? "js" : "php")
+
+    +xjs()
+        h2=(("5" + "6") === "56" ? "js" : "php")
+
+    +xphp()
+        h2=(("5" + "6") === "56" ? "js" : "php")
+
+    h3=(("5" + "6") === "56" ? "js" : "php")

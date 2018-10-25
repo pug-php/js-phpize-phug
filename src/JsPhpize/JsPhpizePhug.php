@@ -8,17 +8,29 @@ use JsPhpize\Lexer\Exception as LexerException;
 use JsPhpize\Parser\Exception as ParserException;
 use Phug\AbstractCompilerModule;
 use Phug\Compiler;
+use Phug\Compiler\Event\NodeEvent;
 use Phug\CompilerEvent;
 use Phug\CompilerInterface;
+use Phug\Formatter\Element\DocumentElement;
+use Phug\Formatter\Element\KeywordElement;
+use Phug\Formatter\Event\FormatEvent;
+use Phug\FormatterEvent;
 use Phug\Parser\Node\CommentNode;
+use Phug\Parser\Node\KeywordNode;
 use Phug\Parser\Node\TextNode;
 use Phug\Renderer;
 use Phug\Util\ModuleContainerInterface;
+use SplObjectStorage;
 
 class JsPhpizePhug extends AbstractCompilerModule
 {
+    protected $documentLanguages;
+    protected $languages = ['js', 'php'];
+
     public function __construct(ModuleContainerInterface $container)
     {
+        $this->documentLanguages = new SplObjectStorage();
+
         parent::__construct($container);
 
         if ($container instanceof Renderer) {
@@ -37,6 +49,7 @@ class JsPhpizePhug extends AbstractCompilerModule
 
         //Set default options
         $this->setOptionsRecursive([
+            'language' => 'js',
             'allowTruncatedParentheses' => true,
             'catchDependencies' => true,
             'ignoreDollarVariable' => true,
@@ -48,13 +61,19 @@ class JsPhpizePhug extends AbstractCompilerModule
         //Apply options from container
         $this->setOptionsRecursive($compiler->getOption(['module_options', 'jsphpize']));
 
-        $compiler->getParser()->setOptionsRecursive([
-            'on_node' => [$this, 'handleNodeEvent'],
-        ]);
+        $compiler->attach(CompilerEvent::NODE, [$this, 'handleNodeEvent']);
+        $compiler->attach(FormatterEvent::FORMAT, [$this, 'handleFormatEvent']);
+
         $compiler->setOptionsRecursive([
+            'keywords' => [
+                'language' => [$this, 'handleLanguageKeyword'],
+                'node-language' => [$this, 'handleNodeLanguageKeyword'],
+                'document-language' => [$this, 'handleDocumentLanguageKeyword'],
+                'file-language' => [$this, 'handleDocumentLanguageKeyword'],
+            ],
             'patterns' => [
-                'transform_expression' => function ($jsCode) use ($compiler) {
-                    return $this->transformExpression($this->getJsPhpizeEngine($compiler), $jsCode, $compiler->getPath());
+                'transform_expression' => function ($code) use ($compiler) {
+                    return $this->transformExpression($this->getJsPhpizeEngine($compiler), $code, $compiler->getPath());
                 },
             ],
             'checked_variable_exceptions' => [
@@ -63,35 +82,115 @@ class JsPhpizePhug extends AbstractCompilerModule
         ]);
     }
 
-    public function handleNodeEvent(Compiler\Event\NodeEvent $event)
+    public function handleFormatEvent(FormatEvent $event)
+    {
+        $document = $event->getElement();
+        if ($document && $document instanceof DocumentElement && $this->documentLanguages->offsetExists($document)) {
+            $this->setOption('language', $this->documentLanguages->offsetGet($document));
+        }
+    }
+
+    public function handleNodeEvent(NodeEvent $event)
     {
         $node = $event->getNode();
-        var_dump($this->eventListeners);
-        exit;
         if ($node instanceof CommentNode && !$node->isVisible() && $node->hasChildAt(0)) {
-            $this->handleComment($node);
+            $firstChild = $node->getChildAt(0);
+            if ($firstChild instanceof TextNode) {
+                $comment = trim($firstChild->getValue());
+
+                if (preg_match('/^@((?:node-|document-|file-)?lang(?:uage)?)([\s(].*)$/', $comment, $match)) {
+                    $keyword = new KeywordNode();
+                    $keyword->setName($match[1]);
+                    $keyword->setValue($match[2]);
+                    $event->setNode($keyword);
+                }
+            }
         }
     }
 
-    protected function handleComment(CommentNode $node)
+    protected function getLanguageKeywordValue($value, KeywordElement $keyword, $name)
     {
-        $firstChild = $node->getChildAt(0);
-        if ($firstChild instanceof TextNode) {
-            $comment = trim($firstChild->getValue());
-            var_dump($comment);
-            exit;
+        $value = trim($value, "()\"' \t\n\r\0\x0B");
+
+        if (!in_array($value, $this->languages)) {
+            $file = 'unknown';
+            $line = 'unknown';
+            $offset = 'unknown';
+            $node = $keyword->getOriginNode();
+            if ($node && ($location = $node->getSourceLocation())) {
+                $file = $location->getPath();
+                $line = $location->getLine();
+                $offset = $location->getOffset();
+            }
+
+            throw new \InvalidArgumentException(sprintf(
+                "Invalid argument for %s keyword: %s. Possible values are: %s\nFile: %s\nLine: %s\nOffset:%s",
+                $name,
+                $value,
+                implode(', ', $this->languages),
+                $file,
+                $line,
+                $offset
+            ));
         }
+
+        return $value;
     }
 
-    protected function transformExpression(JsPhpize $jsPhpize, $jsCode, $fileName)
+    public function handleNodeLanguageKeyword($value, KeywordElement $keyword, $name)
     {
-        $compilation = $this->compile($jsPhpize, $jsCode, $fileName);
+        $value = $this->getLanguageKeywordValue($value, $keyword, $name);
+
+        if ($next = $keyword->getNextSibling()) {
+            $next->prependChild(new KeywordElement('language', $value));
+            $next->appendChild(new KeywordElement('language', $this->getOption('language')));
+        }
+
+        return '';
+    }
+
+    public function handleDocumentLanguageKeyword($value, KeywordElement $keyword, $name)
+    {
+        $value = $this->getLanguageKeywordValue($value, $keyword, $name);
+
+        $this->setOption('language', $value);
+
+        $document = $keyword->getParent();
+        while ($document && !($document instanceof DocumentElement)) {
+            $document = $document->getParent();
+        }
+
+        if ($document) {
+            if (!$this->documentLanguages->offsetExists($document)) {
+                $this->documentLanguages->offsetSet($document, $this->getOption('language'));
+            }
+        }
+
+        return '';
+    }
+
+    public function handleLanguageKeyword($value, KeywordElement $keyword, $name)
+    {
+        $value = $this->getLanguageKeywordValue($value, $keyword, $name);
+
+        $this->setOption('language', $value);
+
+        return '';
+    }
+
+    protected function transformExpression(JsPhpize $jsPhpize, $code, $fileName)
+    {
+        if ($this->getOption('language') === 'php') {
+            return $code;
+        }
+
+        $compilation = $this->compile($jsPhpize, $code, $fileName);
 
         if (!($compilation instanceof Exception)) {
             return $compilation;
         }
 
-        return $jsCode;
+        return $code;
     }
 
     public static function checkedVariableExceptions($variable, $index, $tokens)

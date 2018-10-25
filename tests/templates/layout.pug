@@ -1,0 +1,16 @@
+//- @document-language js
+
+include mixins
+
+body
+    header=(("5" + "6") === "56" ? "js" : "php")
+
+    +xjs()
+        article=(("5" + "6") === "56" ? "js" : "php")
+
+    +xphp()
+        article=(("5" + "6") === "56" ? "js" : "php")
+
+    block content
+
+    footer=(("5" + "6") === "56" ? "js" : "php")
