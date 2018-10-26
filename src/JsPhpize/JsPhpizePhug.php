@@ -13,9 +13,12 @@ use Phug\CompilerEvent;
 use Phug\CompilerInterface;
 use Phug\Formatter\Element\DocumentElement;
 use Phug\Formatter\Element\KeywordElement;
+use Phug\Formatter\Element\MixinElement;
+use Phug\Formatter\ElementInterface;
 use Phug\Formatter\Event\FormatEvent;
 use Phug\FormatterEvent;
 use Phug\Parser\Node\CommentNode;
+use Phug\Parser\Node\DocumentNode;
 use Phug\Parser\Node\KeywordNode;
 use Phug\Parser\Node\TextNode;
 use Phug\Renderer;
@@ -24,12 +27,12 @@ use SplObjectStorage;
 
 class JsPhpizePhug extends AbstractCompilerModule
 {
-    protected $documentLanguages;
-    protected $languages = ['js', 'php'];
+    protected $parentLanguages;
+    protected $languages = ['js', 'php', '@parent'];
 
     public function __construct(ModuleContainerInterface $container)
     {
-        $this->documentLanguages = new SplObjectStorage();
+        $this->parentLanguages = new SplObjectStorage();
 
         parent::__construct($container);
 
@@ -82,11 +85,31 @@ class JsPhpizePhug extends AbstractCompilerModule
         ]);
     }
 
+    protected function getElementDocument(ElementInterface $element)
+    {
+        $document = $element->getOriginNode()->getParent();
+        while ($document && !($document instanceof DocumentNode)) {
+            $document = $document->getParent();
+        }
+
+        return $document;
+    }
+
     public function handleFormatEvent(FormatEvent $event)
     {
-        $document = $event->getElement();
-        if ($document && $document instanceof DocumentElement && $this->documentLanguages->offsetExists($document)) {
-            $this->setOption('language', $this->documentLanguages->offsetGet($document));
+        $element = $event->getElement();
+        if (!$element) {
+            return;
+        }
+        if ($element instanceof DocumentElement) {
+            $element->appendChild(new KeywordElement('language', '@parent'));
+        } elseif ($element instanceof MixinElement) {
+//            $document = $this->getElementDocument($element);
+//            if ($document && $this->parentLanguages->offsetExists($document)) {
+//                $language = $this->getOption('language');
+//                $this->setOption('language', $this->parentLanguages->offsetGet($document));
+//                $element->append(new KeywordElement('language', $language));
+//            }
         }
     }
 
@@ -153,16 +176,22 @@ class JsPhpizePhug extends AbstractCompilerModule
     {
         $value = $this->getLanguageKeywordValue($value, $keyword, $name);
 
-        $this->setOption('language', $value);
+        if ($value === '@parent') {
+            $parent = $keyword->getOriginNode()->getParent();
+            if (!$this->parentLanguages->offsetExists($parent)) {
+                $this->setOption('language', $this->parentLanguages->offsetGet($parent));
+            }
 
-        $document = $keyword->getParent();
-        while ($document && !($document instanceof DocumentElement)) {
-            $document = $document->getParent();
+            return '';
         }
 
+        $this->setOption('language', $value);
+
+        $document = $this->getElementDocument($keyword);
+
         if ($document) {
-            if (!$this->documentLanguages->offsetExists($document)) {
-                $this->documentLanguages->offsetSet($document, $this->getOption('language'));
+            if (!$this->parentLanguages->offsetExists($document)) {
+                $this->parentLanguages->offsetSet($document, $this->getOption('language'));
             }
         }
 
