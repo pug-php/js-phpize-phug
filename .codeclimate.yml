@@ -11,6 +11,15 @@ engines:
     enabled: true
   phpmd:
     enabled: true
+plugins:
+  phpcodesniffer:
+    enabled: true
+  phpmd:
+    enabled: true
+  SonarPHP:
+    enabled: true
+  phan:
+    enabled: true
 ratings:
   paths:
   - "**.php"
