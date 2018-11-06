@@ -185,12 +185,12 @@ class JsPhpizePhug extends AbstractCompilerModule
             return '';
         }
 
-        echo get_class($keyword->getOriginNode()).': '.$value."\n";
+        echo get_class($keyword->getOriginNode()) . ': ' . $value . "\n";
         for ($p = $keyword->getParent(); $p; $p = $p->getParent()) {
-            echo get_class($p->getOriginNode())."\n";
+            echo get_class($p->getOriginNode()) . "\n";
         }
         if ($location = $keyword->getOriginNode()->getSourceLocation()) {
-            echo $location->getPath()."\n".$location->getLine()."\n\n";
+            echo $location->getPath() . "\n" . $location->getLine() . "\n\n";
         }
 
         $previous = $this->getOption('language');
