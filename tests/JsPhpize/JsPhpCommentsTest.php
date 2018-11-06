@@ -80,7 +80,7 @@ class JsPhpCommentsTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean();
         self::assertSame(
-            '<body><header>php</header><div><p>js</p><article>php</article></div><div><p>php</p><article>php</article></div><h1>php</h1><div><p>js</p><h2>php</h2></div><div><p>php</p><h2>php</h2></div><h3>php</h3><footer>php</footer></body>',
+            '<body><header>js</header><div><p>js</p><article>php</article></div><div><p>php</p><article>php</article></div><h1>php</h1><div><p>js</p><h2>php</h2></div><div><p>php</p><h2>php</h2></div><h3>php</h3><footer>php</footer></body>',
             $html
         );
     }

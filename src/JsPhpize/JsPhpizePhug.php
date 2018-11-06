@@ -102,13 +102,13 @@ class JsPhpizePhug extends AbstractCompilerModule
             return;
         }
         if ($element instanceof DocumentElement) {
-            $element->appendChild(new KeywordElement('language', '@parent'));
+            $element->appendChild(new KeywordElement('language', '@parent'), $element->getOriginNode());
         } elseif ($element instanceof MixinElement) {
 //            $document = $this->getElementDocument($element);
 //            if ($document && $this->parentLanguages->offsetExists($document)) {
 //                $language = $this->getOption('language');
 //                $this->setOption('language', $this->parentLanguages->offsetGet($document));
-//                $element->append(new KeywordElement('language', $language));
+//                $element->append(new KeywordElement('language', $language, $element->getOriginNode()));
 //            }
         }
     }
@@ -122,7 +122,7 @@ class JsPhpizePhug extends AbstractCompilerModule
                 $comment = trim($firstChild->getValue());
 
                 if (preg_match('/^@((?:node-|document-|file-)?lang(?:uage)?)([\s(].*)$/', $comment, $match)) {
-                    $keyword = new KeywordNode();
+                    $keyword = new KeywordNode($node->getToken(), $node->getSourceLocation(), $node->getLevel(), $node->getParent());
                     $keyword->setName($match[1]);
                     $keyword->setValue($match[2]);
                     $event->setNode($keyword);
@@ -165,8 +165,8 @@ class JsPhpizePhug extends AbstractCompilerModule
         $value = $this->getLanguageKeywordValue($value, $keyword, $name);
 
         if ($next = $keyword->getNextSibling()) {
-            $next->prependChild(new KeywordElement('language', $value));
-            $next->appendChild(new KeywordElement('language', $this->getOption('language')));
+            $next->prependChild(new KeywordElement('language', $value, $keyword->getOriginNode()));
+            $next->appendChild(new KeywordElement('language', $this->getOption('language'), $keyword->getOriginNode()));
         }
 
         return '';
@@ -185,13 +185,22 @@ class JsPhpizePhug extends AbstractCompilerModule
             return '';
         }
 
+        echo get_class($keyword->getOriginNode()).': '.$value."\n";
+        for ($p = $keyword->getParent(); $p; $p = $p->getParent()) {
+            echo get_class($p->getOriginNode())."\n";
+        }
+        if ($location = $keyword->getOriginNode()->getSourceLocation()) {
+            echo $location->getPath()."\n".$location->getLine()."\n\n";
+        }
+
+        $previous = $this->getOption('language');
         $this->setOption('language', $value);
 
         $document = $this->getElementDocument($keyword);
 
         if ($document) {
             if (!$this->parentLanguages->offsetExists($document)) {
-                $this->parentLanguages->offsetSet($document, $this->getOption('language'));
+                $this->parentLanguages->offsetSet($document, $previous);
             }
         }
 
