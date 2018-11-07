@@ -88,19 +88,26 @@ class JsPhpizePhug extends AbstractCompilerModule
 
     public function handleNodeEvent(NodeEvent $event)
     {
-        $node = $event->getNode();
-        if ($node instanceof CommentNode && !$node->isVisible() && $node->hasChildAt(0)) {
-            $firstChild = $node->getChildAt(0);
-            if ($firstChild instanceof TextNode) {
-                $comment = trim($firstChild->getValue());
-
-                if (preg_match('/^@((?:node-)?lang(?:uage)?)([\s(].*)$/', $comment, $match)) {
-                    $keyword = new KeywordNode($node->getToken(), $node->getSourceLocation(), $node->getLevel(), $node->getParent());
-                    $keyword->setName($match[1]);
-                    $keyword->setValue($match[2]);
-                    $event->setNode($keyword);
-                }
-            }
+        if (
+            ($node = $event->getNode()) instanceof CommentNode &&
+            !$node->isVisible() &&
+            $node->hasChildAt(0) &&
+            ($firstChild = $node->getChildAt(0)) instanceof TextNode &&
+            preg_match(
+                '/^@((?:node-)?lang(?:uage)?)([\s(].*)$/',
+                $comment = trim($firstChild->getValue()),
+                $match
+            )
+        ) {
+            $keyword = new KeywordNode(
+                $node->getToken(),
+                $node->getSourceLocation(),
+                $node->getLevel(),
+                $node->getParent()
+            );
+            $keyword->setName($match[1]);
+            $keyword->setValue($match[2]);
+            $event->setNode($keyword);
         }
     }
 
