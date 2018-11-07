@@ -18,6 +18,17 @@ plugins:
     enabled: true
   phan:
     enabled: true
+    checks:
+      PhanUndeclaredExtendedClass:
+        enabled: false
+      PhanUndeclaredTypeParameter:
+        enabled: false
+      PhanUndeclaredClass:
+        enabled: false
+      PhanUndeclaredClassMethod:
+        enabled: false
+      PhanUndeclaredClassConstant:
+        enabled: false
 ratings:
   paths:
   - "**.php"
