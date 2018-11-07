@@ -29,6 +29,10 @@ plugins:
         enabled: false
       PhanUndeclaredClassConstant:
         enabled: false
+      PhanUndeclaredClassInstanceof:
+        enabled: false
+      PhanUndeclaredTypeReturnType:
+        enabled: false
 ratings:
   paths:
   - "**.php"
