@@ -1,5 +1,6 @@
 ---
-engines:
+version: "2"
+plugins:
   duplication:
     enabled: true
     exclude_paths:
@@ -11,6 +12,27 @@ engines:
     enabled: true
   phpmd:
     enabled: true
+  phpcodesniffer:
+    enabled: true
+  SonarPHP:
+    enabled: true
+  phan:
+    enabled: true
+    checks:
+      PhanUndeclaredExtendedClass:
+        enabled: false
+      PhanUndeclaredTypeParameter:
+        enabled: false
+      PhanUndeclaredClass:
+        enabled: false
+      PhanUndeclaredClassMethod:
+        enabled: false
+      PhanUndeclaredClassConstant:
+        enabled: false
+      PhanUndeclaredClassInstanceof:
+        enabled: false
+      PhanUndeclaredTypeReturnType:
+        enabled: false
 ratings:
   paths:
   - "**.php"
