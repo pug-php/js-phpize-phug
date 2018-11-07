@@ -11,29 +11,21 @@ use Phug\Compiler;
 use Phug\Compiler\Event\NodeEvent;
 use Phug\CompilerEvent;
 use Phug\CompilerInterface;
-use Phug\Formatter\Element\DocumentElement;
 use Phug\Formatter\Element\KeywordElement;
-use Phug\Formatter\Element\MixinElement;
 use Phug\Formatter\ElementInterface;
-use Phug\Formatter\Event\FormatEvent;
-use Phug\FormatterEvent;
 use Phug\Parser\Node\CommentNode;
 use Phug\Parser\Node\DocumentNode;
 use Phug\Parser\Node\KeywordNode;
 use Phug\Parser\Node\TextNode;
 use Phug\Renderer;
 use Phug\Util\ModuleContainerInterface;
-use SplObjectStorage;
 
 class JsPhpizePhug extends AbstractCompilerModule
 {
-    protected $parentLanguages;
-    protected $languages = ['js', 'php', '@parent'];
+    protected $languages = ['js', 'php'];
 
     public function __construct(ModuleContainerInterface $container)
     {
-        $this->parentLanguages = new SplObjectStorage();
-
         parent::__construct($container);
 
         if ($container instanceof Renderer) {
@@ -65,7 +57,6 @@ class JsPhpizePhug extends AbstractCompilerModule
         $this->setOptionsRecursive($compiler->getOption(['module_options', 'jsphpize']));
 
         $compiler->attach(CompilerEvent::NODE, [$this, 'handleNodeEvent']);
-        $compiler->attach(FormatterEvent::FORMAT, [$this, 'handleFormatEvent']);
 
         $compiler->setOptionsRecursive([
             'keywords' => [
@@ -95,24 +86,6 @@ class JsPhpizePhug extends AbstractCompilerModule
         return $document;
     }
 
-    public function handleFormatEvent(FormatEvent $event)
-    {
-        $element = $event->getElement();
-        if (!$element) {
-            return;
-        }
-        if ($element instanceof DocumentElement) {
-            $element->appendChild(new KeywordElement('language', '@parent'), $element->getOriginNode());
-        } elseif ($element instanceof MixinElement) {
-//            $document = $this->getElementDocument($element);
-//            if ($document && $this->parentLanguages->offsetExists($document)) {
-//                $language = $this->getOption('language');
-//                $this->setOption('language', $this->parentLanguages->offsetGet($document));
-//                $element->append(new KeywordElement('language', $language, $element->getOriginNode()));
-//            }
-        }
-    }
-
     public function handleNodeEvent(NodeEvent $event)
     {
         $node = $event->getNode();
@@ -121,7 +94,7 @@ class JsPhpizePhug extends AbstractCompilerModule
             if ($firstChild instanceof TextNode) {
                 $comment = trim($firstChild->getValue());
 
-                if (preg_match('/^@((?:node-|document-|file-)?lang(?:uage)?)([\s(].*)$/', $comment, $match)) {
+                if (preg_match('/^@((?:node-)?lang(?:uage)?)([\s(].*)$/', $comment, $match)) {
                     $keyword = new KeywordNode($node->getToken(), $node->getSourceLocation(), $node->getLevel(), $node->getParent());
                     $keyword->setName($match[1]);
                     $keyword->setValue($match[2]);
@@ -176,33 +149,7 @@ class JsPhpizePhug extends AbstractCompilerModule
     {
         $value = $this->getLanguageKeywordValue($value, $keyword, $name);
 
-        if ($value === '@parent') {
-            $parent = $keyword->getOriginNode()->getParent();
-            if (!$this->parentLanguages->offsetExists($parent)) {
-                $this->setOption('language', $this->parentLanguages->offsetGet($parent));
-            }
-
-            return '';
-        }
-
-        echo get_class($keyword->getOriginNode()) . ': ' . $value . "\n";
-        for ($p = $keyword->getParent(); $p; $p = $p->getParent()) {
-            echo get_class($p->getOriginNode()) . "\n";
-        }
-        if ($location = $keyword->getOriginNode()->getSourceLocation()) {
-            echo $location->getPath() . "\n" . $location->getLine() . "\n\n";
-        }
-
-        $previous = $this->getOption('language');
         $this->setOption('language', $value);
-
-        $document = $this->getElementDocument($keyword);
-
-        if ($document) {
-            if (!$this->parentLanguages->offsetExists($document)) {
-                $this->parentLanguages->offsetSet($document, $previous);
-            }
-        }
 
         return '';
     }
