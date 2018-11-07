@@ -74,14 +74,13 @@ class JsPhpizePhug extends AbstractCompilerModule
 
     public function handleNodeEvent(NodeEvent $event)
     {
-        if (
-            ($node = $event->getNode()) instanceof CommentNode &&
+        if (($node = $event->getNode()) instanceof CommentNode &&
             !$node->isVisible() &&
             $node->hasChildAt(0) &&
             ($firstChild = $node->getChildAt(0)) instanceof TextNode &&
             preg_match(
                 '/^@((?:node-)?lang(?:uage)?)([\s(].*)$/',
-                $comment = trim($firstChild->getValue()),
+                trim($firstChild->getValue()),
                 $match
             )
         ) {
@@ -207,8 +206,7 @@ class JsPhpizePhug extends AbstractCompilerModule
 
             return rtrim(trim($phpCode), ';');
         } catch (Exception $exception) {
-            if (
-                $exception instanceof LexerException ||
+            if ($exception instanceof LexerException ||
                 $exception instanceof ParserException ||
                 $exception instanceof CompilerException
             ) {
