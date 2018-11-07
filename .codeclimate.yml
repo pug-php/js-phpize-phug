@@ -1,5 +1,6 @@
 ---
-engines:
+version: "2"
+plugins:
   duplication:
     enabled: true
     exclude_paths:
@@ -11,10 +12,7 @@ engines:
     enabled: true
   phpmd:
     enabled: true
-plugins:
   phpcodesniffer:
-    enabled: true
-  phpmd:
     enabled: true
   SonarPHP:
     enabled: true
