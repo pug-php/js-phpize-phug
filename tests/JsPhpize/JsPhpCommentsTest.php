@@ -65,10 +65,7 @@ class JsPhpCommentsTest extends TestCase
         );
     }
 
-    /**
-     * @group i
-     */
-    public function testDocumentLanguageKeyWord()
+    public function testNestedLanguageKeyWord()
     {
         $compiler = new Compiler([
             'compiler_modules' => [JsPhpizePhug::class],
@@ -82,6 +79,33 @@ class JsPhpCommentsTest extends TestCase
         self::assertSame(
             '<body><header>js</header><div><p>js</p><article>js</article></div><div><p>php</p><article>js</article></div><h1>php</h1><div><p>js</p><h2>php</h2></div><div><p>php</p><h2>php</h2></div><h3>php</h3><footer>js</footer></body>',
             $html
+        );
+    }
+
+    public function testLanguageKeyWordError()
+    {
+        $compiler = new Compiler([
+            'compiler_modules' => [JsPhpizePhug::class],
+        ]);
+        $message = null;
+
+        try {
+            $compiler->compileFile(__DIR__ . '/../templates/error.pug');
+        } catch (\InvalidArgumentException $exception) {
+            $message = $exception->getMessage();
+        }
+
+        self::assertContains(
+            'Invalid argument for node-language keyword: c. Possible values are: js, php',
+            $message
+        );
+        self::assertContains(
+            'error.pug',
+            $message
+        );
+        self::assertContains(
+            'Line: 1',
+            $message
         );
     }
 }

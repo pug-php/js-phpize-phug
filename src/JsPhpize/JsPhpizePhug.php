@@ -12,9 +12,7 @@ use Phug\Compiler\Event\NodeEvent;
 use Phug\CompilerEvent;
 use Phug\CompilerInterface;
 use Phug\Formatter\Element\KeywordElement;
-use Phug\Formatter\ElementInterface;
 use Phug\Parser\Node\CommentNode;
-use Phug\Parser\Node\DocumentNode;
 use Phug\Parser\Node\KeywordNode;
 use Phug\Parser\Node\TextNode;
 use Phug\Renderer;
@@ -62,8 +60,6 @@ class JsPhpizePhug extends AbstractCompilerModule
             'keywords' => [
                 'language' => [$this, 'handleLanguageKeyword'],
                 'node-language' => [$this, 'handleNodeLanguageKeyword'],
-                'document-language' => [$this, 'handleDocumentLanguageKeyword'],
-                'file-language' => [$this, 'handleDocumentLanguageKeyword'],
             ],
             'patterns' => [
                 'transform_expression' => function ($code) use ($compiler) {
@@ -74,16 +70,6 @@ class JsPhpizePhug extends AbstractCompilerModule
                 'js-phpize' => [static::class, 'checkedVariableExceptions'],
             ],
         ]);
-    }
-
-    protected function getElementDocument(ElementInterface $element)
-    {
-        $document = $element->getOriginNode()->getParent();
-        while ($document && !($document instanceof DocumentNode)) {
-            $document = $document->getParent();
-        }
-
-        return $document;
     }
 
     public function handleNodeEvent(NodeEvent $event)
@@ -148,15 +134,6 @@ class JsPhpizePhug extends AbstractCompilerModule
             $next->prependChild(new KeywordElement('language', $value, $keyword->getOriginNode()));
             $next->appendChild(new KeywordElement('language', $this->getOption('language'), $keyword->getOriginNode()));
         }
-
-        return '';
-    }
-
-    public function handleDocumentLanguageKeyword($value, KeywordElement $keyword, $name)
-    {
-        $value = $this->getLanguageKeywordValue($value, $keyword, $name);
-
-        $this->setOption('language', $value);
 
         return '';
     }
