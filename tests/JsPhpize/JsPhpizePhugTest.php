@@ -47,7 +47,7 @@ class JsPhpizePhugTest extends TestCase
 
         $html = ob_get_contents();
         ob_end_clean();
-        self::assertNull($exception, "`$php` throwed an exception:\n$exception");
+        self::assertNull($exception, "`$php` threw an exception:\n$exception");
         self::assertSame(
             '<a data-foo="{&quot;message&quot;:&quot;Bye&quot;}"></a>',
             $html
