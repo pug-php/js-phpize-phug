@@ -102,6 +102,18 @@ class JsPhpizePhugTest extends TestCase
         );
     }
 
+    public function testDollarVariable()
+    {
+        $compiler = new Compiler([
+            'patterns' => [
+                'expression_in_text' => '%s',
+            ],
+            'compiler_modules' => [JsPhpizePhug::class],
+        ]);
+
+        self::assertSame('<?= $value ?>', $compiler->compile('!?=$value'));
+    }
+
     public function testTruncatedCode()
     {
         $compiler = new Compiler([
