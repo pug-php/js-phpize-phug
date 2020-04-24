@@ -88,7 +88,10 @@ trait Compilation
 
         $dependencies = $jsPhpize->compileDependencies();
         if ($dependencies !== '') {
-            $output = $compiler->getFormatter()->handleCode($dependencies) . $output;
+            $dependencies = $compiler->getFormatter()->handleCode($dependencies);
+            $output = preg_match('/^(<\?(?:php)?\s+namespace\s\S.*)(((?:;|\n|\?>)[\s\S]*)?)$/U', $output, $matches)
+                ? $matches[1] . $dependencies . $matches[2]
+                : $dependencies . $output;
         }
 
         $jsPhpize->flushDependencies();
