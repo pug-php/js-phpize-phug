@@ -65,14 +65,12 @@ trait Compilation
     }
 
     /**
-     * @param CompilerInterface $compiler
-     * @param string            $output
+     * @param string $output
      *
      * @return string
      */
-    protected function parseOutput($compiler, $output)
+    protected function parseOutput($output)
     {
-        $jsPhpize = $this->getJsPhpizeEngine($compiler);
         $output = preg_replace(
             '/\{\s*\?><\?(?:php)?\s*\}/',
             '{}',
@@ -86,16 +84,6 @@ trait Compilation
             $output
         );
 
-        $dependencies = $jsPhpize->compileDependencies();
-        if ($dependencies !== '') {
-            $dependencies = $compiler->getFormatter()->handleCode($dependencies);
-            $output = preg_match('/^(<\?(?:php)?\s+namespace\s\S.*)(((?:;|\n|\?>)[\s\S]*)?)$/U', $output, $matches)
-                ? $matches[1] . $dependencies . $matches[2]
-                : $dependencies . $output;
-        }
-
-        $jsPhpize->flushDependencies();
-
         return $output;
     }
 
@@ -104,8 +92,17 @@ trait Compilation
         /** @var CompilerInterface $compiler */
         $compiler = $event->getTarget();
 
-        $event->setOutput($this->parseOutput($compiler, $event->getOutput()));
+        $event->setOutput($this->parseOutput($event->getOutput()));
 
+        $jsPhpize = $this->getJsPhpizeEngine($compiler);
+        $dependencies = $jsPhpize->compileDependencies();
+
+        if ($dependencies !== '') {
+            $dependencies = $compiler->getFormatter()->handleCode($dependencies);
+            $event->prependOutput($dependencies);
+        }
+
+        $jsPhpize->flushDependencies();
         $compiler->unsetOption('jsphpize_engine');
     }
 
