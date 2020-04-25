@@ -6,6 +6,7 @@ use JsPhpize\JsPhpize;
 use JsPhpize\JsPhpizePhug;
 use PHPUnit\Framework\TestCase;
 use Phug\Compiler;
+use Phug\CompilerEvent;
 use Phug\Renderer;
 use Tests\Thrower;
 
@@ -102,6 +103,33 @@ class JsPhpizePhugTest extends TestCase
         );
     }
 
+    public function testNamespaceInsertion()
+    {
+        include_once __DIR__ . '/Example/Example.php';
+
+        $compiler = new Compiler([
+            'compiler_modules' => [JsPhpizePhug::class],
+        ]);
+        $compiler->attach(CompilerEvent::OUTPUT, function (Compiler\Event\OutputEvent $outputEvent) {
+            $outputEvent->prependCode('namespace Tests\JsPhpize\Example;');
+        });
+
+        $user = [
+            'name' => 'Bob',
+        ];
+
+        ob_start();
+        $php = $compiler->compile('a(title=user.name foo=Example::foo())');
+        eval('?>' . $php);
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        self::assertSame(
+            '<a title="Bob" foo="bar"></a>',
+            $html
+        );
+    }
+
     public function testTruncatedCode()
     {
         $compiler = new Compiler([
@@ -123,6 +151,7 @@ class JsPhpizePhugTest extends TestCase
         $php5Syntax = 'call_user_func(call_user_func($GLOBALS[\'__jpv_dotWithArrayPrototype\'], $items, ' .
             '\'forEach\'), function ($item) {';
         $actual = $jsPhpize('items.forEach(function (item) {');
+
         self::assertContains(
             $jsPhpize('items.forEach(function (item) {'),
             [$php5Syntax, $php7Syntax],
