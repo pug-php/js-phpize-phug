@@ -100,7 +100,7 @@ class JsPhpizePhug extends AbstractCompilerModule
     {
         $value = trim($value, "()\"' \t\n\r\0\x0B");
 
-        if (!in_array($value, $this->languages)) {
+        if (!in_array($value, $this->languages, true)) {
             $file = 'unknown';
             $line = 'unknown';
             $offset = 'unknown';
