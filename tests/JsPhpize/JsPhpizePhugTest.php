@@ -213,6 +213,7 @@ class JsPhpizePhugTest extends TestCase
 
     /**
      * @expectedException \Exception
+     *
      * @expectedExceptionMessage Unhandled
      */
     public function testUnhandledException()
