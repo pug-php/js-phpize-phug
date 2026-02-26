@@ -38,7 +38,7 @@ jobs:
 
     - name: Install dependencies
       if: steps.composer-cache.outputs.cache-hit != 'true'
-      run: composer update --prefer-dist --no-progress --no-interaction --no-security-blocking
+      run: composer update --prefer-dist --no-progress --no-interaction ${{ matrix.php != '7.0' && '--no-security-blocking' || '' }}
 
     - name: Run test suite
       run: vendor/bin/phpunit --no-coverage --verbose
