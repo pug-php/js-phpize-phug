@@ -12,12 +12,11 @@
   "require": {
     "php": ">=7.0",
     "js-phpize/js-phpize": "^2.8.3",
-    "phug/compiler": "^1.7.2",
-    "phug/formatter": "^1.7.2"
+    "phug/compiler": "^1.7.2 || ^2.0.0",
+    "phug/formatter": "^1.7.2 || ^2.0.0"
   },
   "require-dev": {
-    "phpunit/phpunit": ">=4.8.35 <6.0",
-    "codeclimate/php-test-reporter": "dev-master"
+    "phpunit/phpunit": "^4.8.35 || ^5.2.12 || ^8.5.52"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
